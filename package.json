@@ -1,0 +1,15 @@
+{
+  "name": "advancewebscraper",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "private": true,
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

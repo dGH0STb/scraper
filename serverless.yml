@@ -1,0 +1,18 @@
+service: puppeteer-scraper
+
+provider:
+  environment:
+    ENV: ${self:provider.stage}
+  name: aws
+  region: us-west-2
+  runtime: nodejs20.x
+  stage: ${opt:stage, "dev"}
+
+functions:
+  scraper:
+    memorySize: 512
+    timeout: 300
+    image:
+      uri: 429744660197.dkr.ecr.us-west-2.amazonaws.com/scraper:latest
+      command:
+        - dist/index.handler
