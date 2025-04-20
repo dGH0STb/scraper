@@ -6,10 +6,16 @@
     "build": "tsc"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
     "typescript": "^5.5.3"
   },
   "private": true,
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "aws-lambda": "^1.0.7",
+    "puppeteer": "^24.6.1",
+    "puppeteer-extra": "^3.3.6"
+  }
 }
