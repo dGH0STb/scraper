@@ -1,5 +1,5 @@
 import { Callback, Context, Handler } from "aws-lambda";
-import { Browser, Page, PuppeteerLaunchOptions } from "puppeteer";
+import { Browser, Page, LaunchOptions } from "puppeteer";
 import { PuppeteerExtra } from "puppeteer-extra";
 
 interface ExampleEvent {
@@ -17,19 +17,19 @@ export const handler: Handler = async (
         const stealthPlugin = require("puppeteer-extra-plugin-stealth");
         puppeteer.use(stealthPlugin());
 
-        // const proxyPlugin = require("puppeteer-extra-plugin-proxy");
-        // puppeteer.use(
-        //   proxyPlugin({
-        //     address: "pr.oxylabs.io",
-        //     port: 7777,
-        //     credentials: {
-        //       username: "customer-someUsername-cc-US",
-        //       password: "somePassword",
-        //     },
-        //   })
-        // );
+        const proxyPlugin = require("puppeteer-extra-plugin-proxy");
+        puppeteer.use(
+          proxyPlugin({
+            address: "pr.oxylabs.io",
+            port: 7777,
+            credentials: {
+              username: "customer-someUsername-cc-US",
+              password: "somePassword",
+            },
+          })
+        );
 
-        const launchOptions: PuppeteerLaunchOptions = context.functionName
+        const launchOptions: LaunchOptions = context.functionName
             ? {
                 headless: true,
                 executablePath: puppeteer.executablePath(),
