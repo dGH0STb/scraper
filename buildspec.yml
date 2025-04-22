@@ -7,7 +7,8 @@ env:
 phases:
   install:
     commands:
-      - apt-get update && apt-get install -y awscli
+      - echo "Installing AWS CLI..."
+      - yum update -y && yum install -y awscli
     on-failure: ABORT
     runtime-versions:
       nodejs: 20
