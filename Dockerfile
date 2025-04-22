@@ -29,10 +29,11 @@ FROM node:20-bookworm-slim as runtime
 ARG FUNCTION_DIR
 ENV NODE_ENV=production
 
-# Install required dependencies for Chrome
+# Install required dependencies for Chrome and cmake (required for aws-lambda-ric)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
+    cmake \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
