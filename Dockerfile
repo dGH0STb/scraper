@@ -1,27 +1,19 @@
-# Define custom function directory
 ARG FUNCTION_DIR="/function"
 
 FROM node:20-bookworm as build-image
 
-# Include global arg in this stage of the build
 ARG FUNCTION_DIR
 
-# Set working directory
 WORKDIR ${FUNCTION_DIR}
 
-# Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy source files
 COPY . .
 
-# Build TypeScript
 RUN npm run build
 
-# Install Puppeteer browser
 RUN npx puppeteer browsers install chrome
 
 FROM node:20-bookworm-slim as runtime
@@ -29,11 +21,14 @@ FROM node:20-bookworm-slim as runtime
 ARG FUNCTION_DIR
 ENV NODE_ENV=production
 
-# Install required dependencies for Chrome and cmake (required for aws-lambda-ric)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
+    autoconf \
+    automake \
+    libtool \
+    build-essential \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
@@ -73,19 +68,15 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy function code from the build image
 WORKDIR ${FUNCTION_DIR}
 COPY --from=build-image ${FUNCTION_DIR}/node_modules ./node_modules
 COPY --from=build-image ${FUNCTION_DIR}/dist ./dist
 COPY --from=build-image ${FUNCTION_DIR}/package.json ./
 COPY --from=build-image ${FUNCTION_DIR}/.puppeteerrc.cjs ./
 
-# Copy Chrome from the build image
 COPY --from=build-image /root/.cache/puppeteer /root/.cache/puppeteer
 
-# Set the AWS Lambda Runtime Interface Client
 RUN npm install aws-lambda-ric
 
-# Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/npx", "aws-lambda-ric"]
 CMD ["dist/index.handler"]
