@@ -6,6 +6,8 @@ env:
 
 phases:
   install:
+    commands:
+      - apt-get update && apt-get install -y awscli
     on-failure: ABORT
     runtime-versions:
       nodejs: 20

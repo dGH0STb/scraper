@@ -3,14 +3,16 @@ service: puppeteer-scraper
 provider:
   environment:
     ENV: ${self:provider.stage}
+    NODE_OPTIONS: --max-old-space-size=512
   name: aws
   region: us-west-2
   runtime: nodejs20.x
   stage: ${opt:stage, "dev"}
+  timeout: 300
 
 functions:
   scraper:
-    memorySize: 512
+    memorySize: 1024
     timeout: 300
     image:
       uri: 429744660197.dkr.ecr.us-west-2.amazonaws.com/scraper:latest

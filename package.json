@@ -3,19 +3,23 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "test": "ts-node src/local-test.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   },
   "private": true,
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "AWS Lambda puppeteer web scraper",
   "dependencies": {
     "aws-lambda": "^1.0.7",
-    "puppeteer": "^24.6.1",
-    "puppeteer-extra": "^3.3.6"
+    "puppeteer": "^24.7.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }

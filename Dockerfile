@@ -1,71 +1,62 @@
 # Define custom function directory
 ARG FUNCTION_DIR="/function"
 
-FROM node:bookworm as build-image
-
-RUN ls -la
-
-RUN cat /etc/os-release
-RUN uname -a
-
-ENV NPM_CONFIG_CACHE=/tmp/.npm3
+FROM node:20-bookworm as build-image
 
 # Include global arg in this stage of the build
 ARG FUNCTION_DIR
 
-# Install build dependencies
-RUN apt-get update && \
-    apt-get install -y \
-    g++ \
-    make \
-    cmake \
-    unzip \
-    libcurl4-openssl-dev
-
-# Copy function code
-RUN mkdir -p ${FUNCTION_DIR}
-COPY . ${FUNCTION_DIR}
-
+# Set working directory
 WORKDIR ${FUNCTION_DIR}
 
-RUN pwd
-RUN ls -la
+# Copy package files first for better caching
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
-RUN npm install aws-lambda-ric
+# Copy source files
+COPY . .
 
+# Build TypeScript
+RUN npm run build
+
+# Install Puppeteer browser
 RUN npx puppeteer browsers install chrome
 
-# Install some extra dependencies
-RUN apt-get install -y \
-    libnss3 libnss3-dev \
-    libnspr4 libnspr4-dev \
-    libdbus-1-3 \
-    libatk1.0-0 libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libatspi2.0-0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libasound2 \
+FROM node:20-bookworm-slim as runtime
+
+ARG FUNCTION_DIR
+ENV NODE_ENV=production
+
+# Install required dependencies for Chrome
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     ca-certificates \
     fonts-liberation \
-    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
     libc6 \
     libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
     libexpat1 \
     libfontconfig1 \
+    libgbm1 \
     libgcc1 \
     libglib2.0-0 \
     libgtk-3-0 \
-    libpango-1.0-0 libpangocairo-1.0-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
     libstdc++6 \
-    libx11-6 libx11-xcb1 libxcb1 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
     libxcursor1 \
     libxdamage1 \
     libxext6 \
@@ -77,10 +68,23 @@ RUN apt-get install -y \
     libxtst6 \
     lsb-release \
     wget \
-    xdg-utils
+    xdg-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pwd
-RUN ls -la
+# Copy function code from the build image
+WORKDIR ${FUNCTION_DIR}
+COPY --from=build-image ${FUNCTION_DIR}/node_modules ./node_modules
+COPY --from=build-image ${FUNCTION_DIR}/dist ./dist
+COPY --from=build-image ${FUNCTION_DIR}/package.json ./
+COPY --from=build-image ${FUNCTION_DIR}/.puppeteerrc.cjs ./
 
-# Set runtime interface client as default command for the container runtime
+# Copy Chrome from the build image
+COPY --from=build-image /root/.cache/puppeteer /root/.cache/puppeteer
+
+# Set the AWS Lambda Runtime Interface Client
+RUN npm install aws-lambda-ric
+
+# Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/npx", "aws-lambda-ric"]
+CMD ["dist/index.handler"]
