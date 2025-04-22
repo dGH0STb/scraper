@@ -17,6 +17,8 @@ phases:
     commands:
       - echo "Installing dependencies..."
       - npm install
+      - echo "Configuring AWS credentials and ECR permissions..."
+      - aws configure set region us-west-2
   build:
     on-failure: ABORT
     commands:
