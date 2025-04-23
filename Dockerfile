@@ -29,6 +29,8 @@ RUN apt-get update && \
     automake \
     libtool \
     build-essential \
+    python3 \
+    python-is-python3 \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
@@ -68,6 +70,9 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Verify Python is properly installed and in the PATH
+RUN python --version && python3 --version
+
 WORKDIR ${FUNCTION_DIR}
 COPY --from=build-image ${FUNCTION_DIR}/node_modules ./node_modules
 COPY --from=build-image ${FUNCTION_DIR}/dist ./dist
@@ -76,7 +81,9 @@ COPY --from=build-image ${FUNCTION_DIR}/.puppeteerrc.cjs ./
 
 COPY --from=build-image /root/.cache/puppeteer /root/.cache/puppeteer
 
-RUN npm install aws-lambda-ric
+# Install aws-lambda-ric with explicit Python path
+RUN npm config set python /usr/bin/python3 && \
+    npm install aws-lambda-ric
 
 ENTRYPOINT ["/usr/local/bin/npx", "aws-lambda-ric"]
 CMD ["dist/index.handler"]
