@@ -1,6 +1,6 @@
 ARG FUNCTION_DIR="/function"
 
-FROM node:20-bookworm as build-image
+FROM public.ecr.aws/docker/library/node:20-bookworm as build-image
 
 ARG FUNCTION_DIR
 
@@ -16,7 +16,7 @@ RUN npm run build
 
 RUN npx puppeteer browsers install chrome
 
-FROM node:20-bookworm-slim as runtime
+FROM public.ecr.aws/docker/library/node:20-bookworm-slim as runtime
 
 ARG FUNCTION_DIR
 ENV NODE_ENV=production
